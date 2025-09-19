@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดการงบประมาณ - ระบบจัดการน้ำมัน</title>
+  <link rel="stylesheet" href="style-minimal.css">
+  <style>
+    /* ============================================
+       🎨 BUDGET THEME - iOS Design System
+       ============================================ */
+    
+    /* Main Container */
+    .budget-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: var(--spacing-5);
+    }
+    
+    /* Budget Grid Layout */
+    .budget-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: var(--spacing-5);
+      margin-top: var(--spacing-5);
+    }
+    
+    /* Budget Cards */
+    .budget-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-5);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-primary);
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .budget-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-xl);
+      border-color: var(--primary);
+    }
+    
+    /* Status Border Colors */
+    .budget-card.warning {
+      border-left: 5px solid var(--status-warning);
+    }
+    
+    .budget-card.danger {
+      border-left: 5px solid var(--destructive);
+    }
+    
+    .budget-card.active {
+      border-left: 5px solid var(--secondary-color);
+    }
+    
+    /* Budget Header */
+    .budget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-4);
+      padding-bottom: var(--spacing-3);
+      border-bottom: 2px solid var(--border-secondary);
+    }
+    
+    .mission-name {
+      font-weight: 700;
+      font-size: 1.125rem;
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-1);
+      letter-spacing: -0.01em;
+    }
+    
+    .fiscal-year {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+    
+    /* Status Badges */
+    .status-badge {
+      padding: var(--spacing-1) var(--spacing-2);
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.025em;
+    }
+    
+    .status-badge.active {
+      background: rgba(79, 175, 123, 0.15);
+      color: var(--secondary-color);
+    }
+    
+    .status-badge.warning {
+      background: rgba(255, 149, 0, 0.15);
+      color: var(--status-warning);
+    }
+    
+    .status-badge.over-budget {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--destructive);
+    }
+    
+    /* Budget Info */
+    .budget-info {
+      margin-bottom: var(--spacing-4);
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--spacing-2);
+      font-size: 0.875rem;
+    }
+    
+    .info-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    
+    .info-value {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .info-value.positive {
+      color: var(--secondary-color);
+    }
+    
+    .info-value.negative {
+      color: var(--destructive);
+    }
+    
+    /* Progress Bar */
+    .utilization-bar {
+      width: 100%;
+      height: 12px;
+      background: var(--border-secondary);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin: var(--spacing-3) 0;
+      position: relative;
+    }
+    
+    .utilization-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+      transition: width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border-radius: var(--radius-sm);
+    }
+    
+    .utilization-fill.warning {
+      background: linear-gradient(90deg, var(--status-warning), #ffa726);
+    }
+    
+    .utilization-fill.danger {
+      background: linear-gradient(90deg, var(--destructive), #ef5350);
+    }
+    
+    .utilization-fill.over {
+      background: linear-gradient(90deg, #9c27b0, var(--destructive));
+      width: 100% !important;
+    }
+    
+    .utilization-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: var(--text-white);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    }
+    
+    /* Edit Section */
+    .edit-section {
+      border-top: 1px solid var(--border-primary);
+      padding-top: var(--spacing-4);
+      margin-top: var(--spacing-4);
+    }
+    
+    .edit-form {
+      display: flex;
+      gap: var(--spacing-3);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .edit-input {
+      flex: 1;
+      min-width: 120px;
+      padding: var(--spacing-2) var(--spacing-3);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+    }
+
+    .edit-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .edit-btn {
+      padding: var(--spacing-2) var(--spacing-4);
+      background: var(--primary);
+      color: var(--text-white);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      white-space: nowrap;
+    }
+    
+    .edit-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+    
+    .edit-btn:disabled {
+      background: var(--text-tertiary);
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .last-updated {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin-top: var(--spacing-3);
+    }
+    
+    /* Navigation Header */
+    .nav-header {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      padding: var(--spacing-4) 0;
+      border-bottom: 0.5px solid var(--border-primary);
+      margin-bottom: var(--spacing-5);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .nav-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 var(--spacing-5);
+    }
+    
+    .nav-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: var(--spacing-4);
+    }
+    
+    .nav-link {
+      padding: var(--spacing-2) var(--spacing-4);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      text-decoration: none;
+      border-radius: var(--radius-md);
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      font-weight: 500;
+      font-size: 0.875rem;
+      border: 1px solid var(--border-primary);
+    }
+    
+    .nav-link:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-secondary);
+      transform: translateY(-1px);
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: var(--spacing-3);
+      margin-bottom: var(--spacing-5);
+      flex-wrap: wrap;
+    }
+    
+    .action-btn {
+      padding: var(--spacing-3) var(--spacing-5);
+      background: var(--secondary-color);
+      color: var(--text-white);
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border: 1px solid var(--secondary-color);
+    }
+    
+    .action-btn:hover {
+      background: var(--secondary-dark);
+      border-color: var(--secondary-dark);
+      transform: translateY(-1px);
+    }
+    
+    .action-btn.secondary {
+      background: var(--status-warning);
+      border-color: var(--status-warning);
+    }
+    
+    .action-btn.secondary:hover {
+      background: #f57c00;
+      border-color: #f57c00;
+    }
+    
+    /* Add Budget Form */
+    .add-budget-form {
+      background: var(--bg-card);
+      padding: var(--spacing-5);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--spacing-5);
+      border: 1px solid var(--border-primary);
+      border-left: 4px solid var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .add-budget-form h3 {
+      margin: 0 0 var(--spacing-4) 0;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1.125rem;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: var(--spacing-4);
+      align-items: end;
+      flex-wrap: wrap;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 150px;
+    }
+    
+    .form-group label {
+      font-size: 0.875rem;
+      margin-bottom: var(--spacing-1);
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    
+    .form-group input,
+    .form-group select {
+      padding: var(--spacing-2) var(--spacing-3);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: var(--spacing-10);
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+    
+    /* Summary Cards */
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-4);
+      margin-bottom: var(--spacing-8);
+    }
+    
+    .summary-card {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--text-white);
+      padding: var(--spacing-5);
+      border-radius: var(--radius-xl);
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: var(--shadow-lg);
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .summary-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-xl);
+    }
+    
+    .summary-card h3 {
+      margin: 0 0 var(--spacing-3) 0;
+      font-size: 0.875rem;
+      opacity: 0.9;
+      font-weight: 500;
+      letter-spacing: 0.025em;
+      color: var(--gray-900) !important;
+    }
+    
+    .summary-card .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav-header">
+    <div class="nav-content">
+      <div class="nav-title">จัดการงบประมาณ</div>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">เพิ่มข้อมูล</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="inventory.html" class="nav-link">จัดการยอดคงเหลือ</a>
+        <a href="budget.html" class="nav-link" style="background: var(--accent-color) !important; color: var(--gray-900) !important; border-color: var(--accent-color) !important; box-shadow: 0 2px 8px rgba(52, 199, 89, 0.25) !important;">จัดการงบประมาณ</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="budget-container">
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="action-btn" onclick="loadBudgetData()">🔄 รีเฟรชข้อมูล</button>
+
+      <!-- <button class="action-btn secondary" onclick="initializeBudget()">📊 สร้างตารางงบประมาณ</button> -->
+    </div>
+
+    <!-- Add New Budget Form
+    <div class="add-budget-form">
+      <h3>🎯 เพิ่มภารกิจใหม่</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="newMission">ชื่อภารกิจ</label>
+          <input type="text" id="newMission" placeholder="เช่น การบิน VIP">
+        </div>
+        <div class="form-group">
+          <label for="newFiscalYear">ปีงบประมาณ</label>
+          <select id="newFiscalYear">
+            <option value="2567">2567</option>
+            <option value="2568">2568</option>
+            <option value="2569">2569</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="newAllocatedBudget">งบประมาณที่จัดสรร (บาท)</label>
+          <input type="number" id="newAllocatedBudget" min="0" step="0.01" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <button type="button" class="action-btn" onclick="addNewBudget()">➕ เพิ่มภารกิจ</button>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="loading">
+      กำลังโหลดข้อมูลงบประมาณ...
+    </div>
+
+    <!-- Summary Cards -->
+    <div id="summaryCards" class="summary-cards" style="display: none;">
+      <!-- Summary will be populated here -->
+    </div>
+    
+    <!-- Budget Grid -->
+    <div id="budgetGrid" class="budget-grid" style="display: none;">
+      <!-- Budget cards will be populated here -->
+    </div>
+  </div>
+
+  <footer style="margin-top: 40px; padding: 20px 0; border-top: 1px solid #e0e0e0; text-align: center;">
+    <div style="color: #666; font-size: 14px;">
+      💻 พัฒนาโดย: <strong>กฤษฎา ลุนาบุตร</strong> วิศวกรไฟฟ้าปฏิบัติการ
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="budget.js"></script>
+</body>
+</html>

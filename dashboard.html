@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Dashboard - ระบบบันทึกข้อมูลการใช้น้ำมันเชื้อเพลิงอากาศยาน</title>
+  <link rel="stylesheet" href="style-minimal.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* ============================================
+       🎨 DASHBOARD CSS - ORGANIZED BY CATEGORY 
+       ============================================ */
+    
+    /* ============================================
+       📱 1. BASE LAYOUT & STRUCTURE
+       ============================================ */
+    
+    /* Header Layout */
+    header { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      padding: var(--spacing-6) var(--spacing-8); 
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      color: var(--text-primary); 
+      border-bottom: 0.5px solid var(--border-primary);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header h1 { 
+      margin: 0; 
+      font-size: 1.75rem; 
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+    
+    /* Main Container */
+    .container { 
+      max-width: 1280px; 
+      margin: var(--spacing-8) auto; 
+      padding: 0 var(--spacing-6); 
+    }
+
+    /* Status Display */
+    .muted { 
+      color: var(--text-tertiary); 
+      font-size: 0.8125rem; 
+    }
+
+    /* ============================================
+       🚀 2. TOOLBAR & NAVIGATION
+       ============================================ */
+
+    /* Toolbar Layout */
+    .toolbar { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: var(--spacing-4); 
+      align-items: center; 
+      position: relative;
+      z-index: 1;
+      background: var(--bg-card);
+      padding: var(--spacing-4);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 0.5px solid var(--border-primary);
+      margin-bottom: var(--spacing-6);
+    }
+    
+    .toolbar .right { 
+      margin-left: auto; 
+      display: flex; 
+      gap: var(--spacing-3); 
+      align-items: center; 
+    }
+
+    /* ============================================
+       🎯 3. BUTTONS & CONTROLS
+       ============================================ */
+
+    /* Base Button Styles */
+    .control-btn, 
+    .export-btn, 
+    .refresh-btn, 
+    .clear-filters-btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-success { 
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-2);
+      padding: var(--spacing-3) var(--spacing-4);
+      border: 0.5px solid var(--border-primary);
+      border-radius: var(--radius-md);
+      font-weight: 500;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      min-height: 36px;
+      text-decoration: none;
+    }
+
+    /* Primary Button */
+    .btn-primary {
+      background: var(--primary);
+      color: var(--text-white);
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      border-color: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    /* Secondary Button */
+    .btn-secondary {
+      background: var(--text-tertiary);
+      color: var(--text-white);
+      border-color: var(--text-tertiary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--text-secondary);
+      border-color: var(--text-secondary);
+      transform: translateY(-1px);
+    }
+
+    /* Success Button (Export) */
+    .btn-success,
+    #exportBtn {
+      background: var(--secondary-color);
+      color: var(--text-white);
+      border-color: var(--secondary-color);
+    }
+
+    .btn-success:hover,
+    #exportBtn:hover {
+      background: var(--secondary-dark);
+      border-color: var(--secondary-dark);
+      transform: translateY(-1px);
+    }
+
+    /* Remove navigation button overrides - use default nav styles */
+
+    /* Default Control Buttons */
+    .control-btn,
+    .refresh-btn {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    .control-btn:hover,
+    .refresh-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-secondary);
+      transform: translateY(-1px);
+    }
+    
+    /* Status Messages */
+    #loadStatus { 
+      padding: var(--spacing-2) var(--spacing-3); 
+      border-radius: var(--radius-sm); 
+      font-weight: 500;
+      font-size: 0.8125rem;
+      transition: all 0.3s ease;
+    }
+
+    #loadStatus:not(:empty) {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+    }
+
+    #loadStatus.success {
+      background: #dcfce7;
+      border-color: #16a34a;
+      color: #15803d;
+    }
+
+    #loadStatus.warning {
+      background: #fef3c7;
+      border-color: #f59e0b;
+      color: #d97706;
+    }
+
+    #loadStatus.error {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #dc2626;
+    }
+
+    /* Action Buttons in Table */
+    .action-buttons {
+      display: flex;
+      gap: var(--spacing-1);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .edit-btn, 
+    .delete-btn {
+      padding: var(--spacing-1) var(--spacing-3);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-1);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+    }
+
+    .edit-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-secondary);
+    }
+
+    .delete-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-secondary);
+      color: #dc2626;
+    }
+
+    /* ============================================
+       📊 4. STATISTICS CARDS
+       ============================================ */
+
+    /* Cards Grid Layout */
+    .cards { 
+      display: grid; 
+      grid-template-columns: repeat(4, minmax(0, 1fr)); 
+      gap: var(--spacing-6); 
+      margin-top: var(--spacing-6); 
+    }
+    
+    /* Individual Card Styling */
+    .card { 
+      background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-primary) 100%);
+      border-radius: var(--radius-xl); 
+      box-shadow: var(--shadow-lg);
+      padding: var(--spacing-8); 
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border: 1px solid var(--border-primary);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Card Accent Border */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+    
+    /* Card Hover Effects */
+    .card:hover { 
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
+      border-color: var(--primary);
+    }
+    
+    /* Statistics Layout */
+    .stat { 
+      display: flex; 
+      gap: var(--spacing-5); 
+      align-items: center; 
+    }
+    
+    /* Animated Icons */
+    .stat .icon { 
+      font-size: 2rem; 
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+      animation: bounce 2s ease-in-out infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { 
+        transform: translateY(0); 
+      }
+      40% { 
+        transform: translateY(-4px); 
+      }
+      60% { 
+        transform: translateY(-2px); 
+      }
+    }
+    
+    /* Statistics Values */
+    .stat .val { 
+      font-size: 1.8rem; 
+      font-weight: 800; 
+      color: #4FAF7B;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    /* Statistics Labels */
+    .stat .lbl { 
+      color: var(--text-primary); 
+      font-size: 0.9rem; 
+      margin-top: var(--spacing-2); 
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      opacity: 0.8;
+    }
+
+    /* ============================================
+       🔧 5. FILTERS & FORM CONTROLS
+       ============================================ */
+
+    /* Filter Container */
+    .filters { 
+      display: flex; 
+      flex-direction: column;
+      gap: var(--spacing-3); 
+      margin-top: var(--spacing-4); 
+      padding: var(--spacing-4);
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border: 0.5px solid var(--border-primary);
+    }
+    
+    /* Filter Grid Layout */
+    .filter-row { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+      gap: var(--spacing-3); 
+      align-items: end; 
+    }
+    
+    /* Filter Labels */
+    .filters label { 
+      display: flex; 
+      flex-direction: column; 
+      gap: var(--spacing-1); 
+      font-size: 0.8rem; 
+      font-weight: 500;
+      color: var(--text-secondary); 
+    }
+    
+    /* Filter Inputs & Selects */
+    .filters input, 
+    .filters select { 
+      padding: var(--spacing-2) var(--spacing-3); 
+      border-radius: var(--radius-sm); 
+      border: 1px solid var(--border-primary); 
+      background: var(--bg-primary); 
+      font-size: 0.8rem; 
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+    }
+    
+    /* Filter Focus States */
+    .filters input:focus, 
+    .filters select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Filter Actions */
+    .filter-actions { 
+      display: flex; 
+      gap: var(--spacing-3); 
+      align-items: center; 
+      justify-content: flex-end; 
+      margin-top: var(--spacing-2); 
+    }
+
+    /* Search Input Wrapper */
+    .search-wrap { 
+      position: relative; 
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    .search-wrap input { 
+      width: 100%; 
+      padding-right: 36px; 
+      border-radius: var(--radius-md);
+    }
+    
+    /* Clear Search Button */
+    .clear-btn { 
+      position: absolute; 
+      right: 8px; 
+      top: 50%; 
+      transform: translateY(-50%); 
+      border: none; 
+      background: var(--text-tertiary); 
+      color: var(--bg-primary);
+      width: 24px; 
+      height: 24px; 
+      line-height: 22px; 
+      text-align: center; 
+      border-radius: 50%; 
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    
+    .clear-btn:hover {
+      background: var(--text-secondary);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    /* Clear Filters Button */
+    .clear-filters-btn {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-2) var(--spacing-4);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    /* ============================================
+       📈 6. CHARTS & VISUALIZATIONS
+       ============================================ */
+
+    /* Charts Grid Layout */
+    .charts { 
+      display: grid; 
+      grid-template-columns: repeat(3, minmax(0, 1fr)); 
+      gap: var(--spacing-5); 
+      margin-top: var(--spacing-5); 
+      overflow-x: auto; 
+    }
+    
+    /* Individual Chart Card */
+    .chart-card { 
+      background: var(--bg-card);
+      border-radius: var(--radius-xl); 
+      box-shadow: var(--shadow-lg);
+      padding: var(--spacing-6); 
+      min-height: 300px; 
+      display: flex; 
+      flex-direction: column; 
+      transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+      overflow: hidden;
+      border: 0.5px solid var(--border-primary);
+    }
+    
+    /* Chart Card Accent */
+    .chart-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #2e5283, #e3bd33, #2e5283);
+      border-radius: 20px 20px 0 0;
+    }
+    
+    /* Chart Card Hover */
+    .chart-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(46, 82, 131, 0.12);
+      border-color: rgba(46, 82, 131, 0.3);
+    }
+    
+    /* Chart Titles */
+    .chart-card h3 { 
+      font-size: 1rem; 
+      margin: 0 0 var(--spacing-4); 
+      color: var(--text-primary); 
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: -0.01em;
+    }
+    
+    /* Chart Canvas */
+    .chart-card canvas { 
+      width: 100% !important; 
+      height: 300px !important; 
+      max-width: 100%; 
+    }
+
+    /* ============================================
+       ✈️ 7. AIRCRAFT GALLERY
+       ============================================ */
+    /* Aircraft Gallery Grid */
+    .gallery { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+      gap: var(--spacing-3); 
+    }
+    
+    /* Individual Aircraft Card */
+    .aircraft-card { 
+      background: var(--bg-card); 
+      border: 0.5px solid var(--border-primary); 
+      border-radius: var(--radius-lg); 
+      padding: var(--spacing-3); 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      gap: var(--spacing-3); 
+      transition: all 0.2s ease;
+    }
+    
+    /* Aircraft Card Hover */
+    .aircraft-card:hover { 
+      border-color: var(--primary); 
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+    
+    /* Aircraft Icon */
+    .plane-icon { 
+      width: 32px; 
+      height: 32px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+    }
+    
+    /* Aircraft Name */
+    .aircraft-name { 
+      font-size: 0.8rem; 
+      color: var(--text-primary); 
+      font-weight: 500;
+    }
+
+    /* ============================================
+       🗃️ 8. DATA TABLES
+       ============================================ */
+
+    /* Table Container */
+    .table-wrap { 
+      background: var(--bg-card);
+      border-radius: var(--radius-lg); 
+      box-shadow: var(--shadow-md);
+      padding: var(--spacing-4); 
+      overflow: auto; 
+      margin-top: var(--spacing-5);
+      border: 0.5px solid var(--border-primary);
+      max-height: 70vh;
+    }
+    
+    /* Base Table Styling */
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 0.75rem;
+    }
+    
+    /* Table Headers & Cells */
+    th, td { 
+      border-bottom: 0.5px solid var(--border-primary); 
+      padding: var(--spacing-2) var(--spacing-3); 
+      font-size: 0.75rem; 
+      white-space: nowrap; 
+      text-align: left;
+      vertical-align: middle;
+    }
+    
+    /* Table Headers */
+    th { 
+      background: var(--bg-secondary);
+      text-align: left; 
+      position: sticky; 
+      top: 0; 
+      z-index: 10; 
+      font-weight: 600;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-primary);
+      font-size: 0.75rem;
+      letter-spacing: 0.025em;
+    }
+    
+    /* Table Row Hover */
+    tbody tr:hover {
+      background: var(--bg-secondary);
+      transition: background-color 0.15s ease;
+    }
+    
+    /* Table Body Cells */
+    tbody td {
+      font-size: 0.7rem;
+      color: var(--text-primary);
+    }
+    
+    /* ============================================
+       📏 COLUMN WIDTHS OPTIMIZATION
+       ============================================ */
+    
+    /* Compact Column Widths for Better Data Density */
+    th:nth-child(1),  td:nth-child(1)  { width: 40px;  text-align: center; } /* ลำดับ */
+    th:nth-child(2),  td:nth-child(2)  { width: 70px;  } /* วันที่ */
+    th:nth-child(3),  td:nth-child(3)  { width: 80px;  } /* ภารกิจ */
+    th:nth-child(4),  td:nth-child(4)  { width: 80px;  } /* ประเภทเอกสาร */
+    th:nth-child(5),  td:nth-child(5)  { width: 50px;  text-align: center; } /* เล่มที่ */
+    th:nth-child(6),  td:nth-child(6)  { width: 60px;  text-align: center; } /* เลขที่ */
+    th:nth-child(7),  td:nth-child(7)  { width: 50px;  text-align: center; } /* ใบสั่งจ่าย เล่มที่ */
+    th:nth-child(8),  td:nth-child(8)  { width: 60px;  text-align: center; } /* ใบสั่งจ่าย เลขที่ */
+    th:nth-child(9),  td:nth-child(9)  { width: 60px;  text-align: center; } /* เครื่องบิน */
+    th:nth-child(10), td:nth-child(10) { width: 70px;  } /* สถานี */
+    th:nth-child(11), td:nth-child(11) { width: 80px;  } /* ผู้จัดซื้อ */
+    th:nth-child(12), td:nth-child(12) { width: 60px;  text-align: center; } /* ประเภทน้ำมัน */
+    th:nth-child(13), td:nth-child(13) { width: 70px;  } /* แหล่งที่มา */
+    th:nth-child(14), td:nth-child(14) { width: 60px;  text-align: right; } /* ปริมาณ */
+    th:nth-child(15), td:nth-child(15) { width: 50px;  text-align: right; } /* ราคา */
+    th:nth-child(16), td:nth-child(16) { width: 70px;  text-align: right; } /* มูลค่าไม่รวม VAT */
+    th:nth-child(17), td:nth-child(17) { width: 50px;  text-align: right; } /* VAT */
+    th:nth-child(18), td:nth-child(18) { width: 70px;  text-align: right; } /* รวม VAT */
+    th:nth-child(19), td:nth-child(19) { width: 80px;  } /* ผู้บันทึก */
+    th:nth-child(20), td:nth-child(20) { width: 100px; } /* หมายเหตุ */
+    th:nth-child(21), td:nth-child(21) { width: 70px;  text-align: center; } /* การจัดการ */
+
+    /* ============================================
+       📱 9. RESPONSIVE DESIGN
+       ============================================ */
+
+    footer { 
+      display: flex; 
+      justify-content: center; 
+      padding: 24px; 
+      gap: 16px;
+    }
+    
+    .dashboard-link { 
+      background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+      border: 2px solid rgba(46, 82, 131, 0.2); 
+      border-radius: 16px; 
+      padding: 12px 20px; 
+      color: #2e5283; 
+      text-decoration: none; 
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(46, 82, 131, 0.1);
+    }
+    
+    .dashboard-link:hover {
+      background: linear-gradient(135deg, #2e5283 0%, #e3bd33 100%);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(46, 82, 131, 0.3);
+      border-color: #2e5283;
+    }
+
+    /* Modal styles */
+    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:50; }
+    .modal-content { background:#fff; width:min(920px, 92vw); margin:6vh auto; border-radius:12px; overflow:hidden; max-height:85vh; overflow-y:auto; }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:#0b6bd3; color:#fff; }
+    .close { background:none; border:none; color:#fff; font-size:24px; cursor:pointer; }
+    .form-section { padding:16px; border-bottom:1px solid #e5e7eb; }
+    .form-section h3 { margin:0 0 12px 0; color:#111827; font-size:16px; }
+    .form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .form-group { display:flex; flex-direction:column; gap:4px; }
+    .form-group label { font-size:13px; color:#374151; font-weight:500; }
+    .form-group input, .form-group select, .form-group textarea { 
+      padding:8px 10px; border:1px solid #d1d5db; border-radius:6px; font-size:14px;
+    }
+    .form-group.full-width { grid-column:1/-1; }
+    .checkbox-group { margin-top:12px; }
+    .checkbox-group label { display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; }
+    .calculation-preview { padding:16px; background:#f9fafb; }
+    .calculation-preview h3 { margin:0 0 12px 0; color:#111827; font-size:14px; }
+    .calc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .calc-item { text-align:center; }
+    .calc-item label { display:block; font-size:12px; color:#6b7280; margin-bottom:4px; }
+    .calc-item span { font-size:18px; font-weight:700; color:#059669; }
+    .modal-actions { padding:16px; display:flex; justify-content:flex-end; gap:8px; }
+    .action-btn { padding:10px 16px; border:none; border-radius:8px; cursor:pointer; font-size:14px; }
+    .success-btn { background:#16a34a; color:#fff; }
+    .cancel-btn { background:#6b7280; color:#fff; }
+
+    /* Inventory Dashboard Styles */
+    .inventory-dashboard {
+      margin-top: 8px;
+    }
+    
+    /* Budget Dashboard Styles */
+    .budget-dashboard {
+      margin-top: 8px;
+    }
+    
+    .budget-card-compact {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .budget-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .budget-mission-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #111827;
+    }
+    
+    .budget-status-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    
+    .budget-status-badge.active {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .budget-status-badge.warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    .budget-status-badge.over-budget {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .budget-amounts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      font-size: 12px;
+    }
+    
+    .budget-amount-item {
+      text-align: center;
+      padding: 8px;
+      background: #f9fafb;
+      border-radius: 4px;
+    }
+    
+    .budget-amount-label {
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    
+    .budget-amount-value {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .budget-amount-value.positive {
+      color: #059669;
+    }
+    
+    .budget-amount-value.negative {
+      color: #dc2626;
+    }
+    
+    .budget-progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    
+    .budget-progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .budget-progress-fill.normal {
+      background: #10b981;
+    }
+    
+    .budget-progress-fill.warning {
+      background: #f59e0b;
+    }
+    
+    .budget-progress-fill.over {
+      background: #ef4444;
+    }
+    
+    .inventory-card-compact {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    
+    .inventory-card-compact:hover {
+      border-color: #0b6bd3;
+      box-shadow: 0 2px 8px rgba(11, 107, 211, 0.1);
+    }
+    
+    .inventory-header-compact {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .inventory-source-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+      line-height: 1.2;
+    }
+    
+    .inventory-type-badge {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .inventory-type-badge.tankfarm {
+      background: #dcfce7;
+      color: #166534;
+    }
+    
+    .inventory-type-badge.truck {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .inventory-type-badge.barrel {
+      background: #fce7f3;
+      color: #be185d;
+    }
+    
+    .inventory-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .inventory-stock {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0b6bd3;
+    }
+    
+    .inventory-capacity {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    
+    .inventory-progress {
+      width: 100%;
+      height: 6px;
+      background: #f3f4f6;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    
+    .inventory-progress-fill {
+      height: 100%;
+      transition: width 0.3s ease;
+      border-radius: 3px;
+    }
+    
+    .inventory-progress-fill.level-high {
+      background: linear-gradient(90deg, #10b981, #34d399);
+    }
+    
+    .inventory-progress-fill.level-medium {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+    
+    .inventory-progress-fill.level-low {
+      background: linear-gradient(90deg, #ef4444, #f87171);
+    }
+    
+    .inventory-progress-fill.level-overfill {
+      background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+    }
+    
+    .inventory-percentage {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .inventory-percentage-text {
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .inventory-percentage-text.level-high {
+      color: #059669;
+    }
+    
+    .inventory-percentage-text.level-medium {
+      color: #d97706;
+    }
+    
+    .inventory-percentage-text.level-low {
+      color: #dc2626;
+    }
+    
+    .inventory-percentage-text.level-overfill {
+      color: #7c3aed;
+    }
+    
+    .inventory-last-updated {
+      font-size: 10px;
+      color: #9ca3af;
+    }
+    
+    .inventory-status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      position: absolute;
+      top: 8px;
+      right: 8px;
+    }
+    
+    .inventory-status-indicator.status-good {
+      background: #10b981;
+    }
+    
+    .inventory-status-indicator.status-warning {
+      background: #f59e0b;
+    }
+    
+    .inventory-status-indicator.status-critical {
+      background: #ef4444;
+    }
+    
+    .inventory-status-indicator.status-overfill {
+      background: #8b5cf6;
+    }
+
+    /* Pagination Styles */
+    .pagination-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      margin-top: 16px;
+      border-top: 1px solid #e5e7eb;
+      background: #f9fafb;
+      border-radius: 0 0 8px 8px;
+    }
+    
+    .pagination-info {
+      font-size: 14px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+    
+    .pagination-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .pagination-btn {
+      padding: 8px 12px;
+      background: #fff;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      color: #495057;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    
+    .pagination-btn:hover:not(:disabled) {
+      background: #f8f9fa;
+      border-color: #adb5bd;
+    }
+    
+    .pagination-btn:disabled {
+      background: #f8f9fa;
+      color: #6c757d;
+      cursor: not-allowed;
+      border-color: #e5e7eb;
+    }
+    
+    .page-info {
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+    }
+
+    /* ============================================
+       📱 TABLET RESPONSIVE (≤1024px)
+       ============================================ */
+    
+    @media (max-width: 1024px) {
+      /* Statistics Cards Layout */
+      .cards { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: var(--spacing-3); 
+      }
+      
+      /* Charts Layout */
+      .charts { 
+        grid-template-columns: 1fr; 
+        gap: var(--spacing-4); 
+      }
+      
+      .chart-card { 
+        min-height: 280px; 
+      }
+      
+      /* Filters Layout */
+      .filter-row {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      }
+      
+      .filters {
+        padding: var(--spacing-3);
+      }
+      
+      /* Navigation Layout */
+      .nav-container {
+        flex-direction: column;
+        gap: var(--spacing-3);
+        text-align: center;
+      }
+      
+      /* Aircraft Gallery */
+      .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      }
+      
+      /* Other Grid Components */
+      .grid { 
+        grid-template-columns: 1fr; 
+      }
+      
+      .inventory-summary { 
+        grid-template-columns: 1fr; 
+      }
+    }
+    
+    /* ============================================
+       📱 MOBILE RESPONSIVE (≤768px)
+       ============================================ */
+    
+    @media (max-width: 768px) {
+      /* Statistics Cards - Single Column */
+      .cards { 
+        grid-template-columns: 1fr; 
+        gap: var(--spacing-2); 
+      }
+      
+      /* Filters - More Compact */
+      .filter-row {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-2);
+      }
+      
+      .filters {
+        padding: var(--spacing-2);
+        margin-top: var(--spacing-3);
+      }
+      
+      /* Navigation - Stacked Layout */
+      .nav-container {
+        flex-direction: column;
+        gap: var(--spacing-2);
+      }
+      
+      .nav-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      /* Data Table - Ultra Compact */
+      .table-wrap {
+        padding: var(--spacing-2);
+        max-height: 60vh;
+      }
+      
+      th, td {
+        padding: var(--spacing-1) var(--spacing-2);
+        font-size: 0.65rem;
+      }
+      
+      tbody td {
+        font-size: 0.6rem;
+      }
+      
+      /* Aircraft Gallery - Smaller Cards */
+      .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: var(--spacing-2);
+      }
+      
+      .aircraft-card {
+        padding: var(--spacing-2);
+        gap: var(--spacing-2);
+      }
+      
+      .plane-icon {
+        width: 28px;
+        height: 28px;
+      }
+      
+      .aircraft-name {
+        font-size: 0.7rem;
+      }
+      
+      /* Other Mobile Adjustments */
+      .inventory-dashboard { 
+        grid-template-columns: 1fr; 
+      }
+      
+      .inventory-summary { 
+        grid-template-columns: repeat(3, 1fr); 
+      }
+      
+      /* Pagination - Mobile Friendly */
+      .pagination-container {
+        flex-direction: column;
+        gap: var(--spacing-3);
+        text-align: center;
+      }
+      
+      .pagination-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .pagination-btn {
+        padding: var(--spacing-1) var(--spacing-2);
+        font-size: 0.8125rem;
+      }
+      
+      /* Toolbar - Mobile Layout */
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-2);
+      }
+      
+      .control-btn, 
+      #exportBtn,
+      .btn-primary,
+      .btn-secondary,
+      .btn-success {
+        width: 100%;
+        justify-content: center;
+        margin: var(--spacing-1) 0;
+      }
+      
+      /* Search - Full Width */
+      .search-wrap {
+        width: 100%;
+      }
+      
+      .search-wrap input {
+        width: 100%;
+      }
+    }
+
+    /* ============================================
+       🏁 END OF ORGANIZED CSS
+       ============================================ */
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dashboard - ระบบบันทึกข้อมูลการใช้น้ำมันเชื้อเพลิงอากาศยาน</h1>
+    <div class="toolbar">
+      <div class="right">
+        <span id="apiStatus" class="muted"></span>
+        <span id="loadStatus" class="muted"></span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Stats Cards -->
+    <section class="cards">
+      <div class="card">
+        <div class="stat">
+          <div class="icon">
+            <span class="material-symbols-outlined">description</span>
+          </div>
+          <div>
+            <div class="val" id="cardCount">-</div>
+            <div class="lbl">จำนวนรายการทั้งหมด</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="stat">
+          <div class="icon">
+            <span class="material-symbols-outlined">local_gas_station</span>
+          </div>
+          <div>
+            <div class="val" id="cardLiters">-</div>
+            <div class="lbl">ปริมาณรวม (ลิตร)</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="stat">
+          <div class="icon">
+            <span class="material-symbols-outlined">monetization_on</span>
+          </div>
+          <div>
+            <div class="val" id="cardAmount">-</div>
+            <div class="lbl">มูลค่ารวม (รวม VAT)</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="stat">
+          <div class="icon">
+            <span class="material-symbols-outlined">flight</span>
+          </div>
+          <div>
+            <div class="val" id="cardAircraft">-</div>
+            <div class="lbl">จำนวนเครื่องบิน</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="card" style="margin-top:14px;">
+      <h3 style="margin:0 0 10px;">
+        <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">filter_alt</span>
+        ตัวกรองข้อมูล
+      </h3>
+      <div class="filters">
+        <div class="filter-row">
+          <label>
+            <span>ตั้งแต่วันที่</span>
+            <input type="date" id="startDate" />
+          </label>
+          <label>
+            <span>ถึงวันที่</span>
+            <input type="date" id="endDate" />
+          </label>
+        </div>
+        <div class="filter-row">
+          <label>
+            <span>เครื่องบิน</span>
+            <select id="aircraftSelect"><option value="">ทั้งหมด</option></select>
+          </label>
+          <label>
+            <span>สถานีบริการน้ำมัน</span>
+            <select id="stationSelect"><option value="">ทั้งหมด</option></select>
+          </label>
+        </div>
+        <div class="filter-row">
+          <label>
+            <span>ภารกิจ</span>
+            <select id="missionSelect"><option value="">ทั้งหมด</option></select>
+          </label>
+          <label>
+            <span>ค้นหา (ทุกคอลัมน์)</span>
+            <div class="search-wrap">
+              <input type="search" id="searchBox" placeholder="ค้นหา (ทุกคอลัมน์)" />
+              <button id="clearSearch" class="clear-btn">×</button>
+            </div>
+          </label>
+        </div>
+        <div class="filter-row">
+          <div></div>
+          <div class="filter-actions">
+            <button id="clearFilters" class="btn-ghost">
+              <span class="material-symbols-outlined">clear_all</span>
+              ล้างตัวกรอง
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts">
+      <div class="chart-card">
+        <h3>
+          <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">trending_up</span>
+          แนวโน้มการใช้น้ำมันรายวัน
+        </h3>
+        <canvas id="chartByDate" height="200"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>
+          <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">flight</span>
+          การใช้น้ำมันตามเครื่องบิน
+        </h3>
+        <canvas id="chartByAircraft" height="200"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>
+          <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">work</span>
+          การใช้น้ำมันตามภารกิจ
+        </h3>
+        <canvas id="chartByMission" height="200"></canvas>
+      </div>
+    </section>
+
+    <!-- Fuel Inventory Dashboard -->
+    <section class="card" style="margin-top:14px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+        <h3 style="margin:0;">
+          <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">water_drop</span>
+          ยอดคงเหลือน้ำมันแบบเรียลไทม์
+        </h3>
+        <div>
+          <button id="refreshInventoryBtn" class="btn-secondary" style="font-size:12px; padding:6px 12px;">
+            <span class="material-symbols-outlined" style="font-size: 16px;">refresh</span>
+            รีเฟรช
+          </button>
+          <a href="inventory.html" class="btn-primary" style="font-size:12px; padding:6px 12px; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size: 16px;">settings</span>
+            จัดการ
+          </a>
+        </div>
+      </div>
+      
+      <!-- Inventory Summary Cards -->
+      <div class="inventory-summary" style="display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:var(--spacing-3); margin-bottom:var(--spacing-4);">
+        <div class="summary-card" style="background:var(--bg-card); border:1px solid var(--border-primary); border-radius:var(--radius-md); padding:var(--spacing-3); text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:1.125rem; font-weight:700; color:var(--accent-color);" id="totalCapacity">-</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:var(--spacing-1);">ความจุรวม (ลิตร)</div>
+        </div>
+        <div class="summary-card" style="background:var(--bg-card); border:1px solid var(--border-primary); border-radius:var(--radius-md); padding:var(--spacing-3); text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:1.125rem; font-weight:700; color:var(--status-info);" id="totalStock">-</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:var(--spacing-1);">ยอดคงเหลือรวม (ลิตร)</div>
+        </div>
+        <div class="summary-card" style="background:var(--bg-card); border:1px solid var(--border-primary); border-radius:var(--radius-md); padding:var(--spacing-3); text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:1.125rem; font-weight:700; color:var(--secondary-color);" id="averageLevel">-</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:var(--spacing-1);">ระดับเฉลี่ย (%)</div>
+        </div>
+      </div>
+      
+      <!-- Inventory Grid -->
+      <div id="inventoryDashboard" class="inventory-dashboard" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px;">
+        <!-- Inventory cards will be populated here -->
+      </div>
+      
+      <div id="inventoryLoadingStatus" style="text-align:center; padding:20px; color:#6c757d; display:none;">
+        กำลังโหลดข้อมูลยอดคงเหลือ...
+      </div>
+    </section>
+
+    <!-- Budget Dashboard -->
+    <section class="card" style="margin-top:14px;">
+      <h3 style="margin:0 0 12px;">
+        <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">account_balance</span>
+        งบประมาณภารกิจ
+      </h3>
+      
+      <!-- Budget Summary Cards -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:var(--spacing-3); margin-bottom:var(--spacing-4);">
+        <div class="summary-card" style="background:var(--bg-card); border:1px solid var(--border-primary); border-radius:var(--radius-md); padding:var(--spacing-3); text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:1.125rem; font-weight:700; color:var(--status-info);" id="totalBudgetAllocated">-</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:var(--spacing-1);">งบประมาณรวม</div>
+        </div>
+        <div class="summary-card" style="background:var(--bg-card); border:1px solid var(--border-primary); border-radius:var(--radius-md); padding:var(--spacing-3); text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:1.125rem; font-weight:700; color:var(--destructive);" id="totalBudgetUsed">-</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:var(--spacing-1);">ใช้ไปแล้ว</div>
+        </div>
+        <div class="summary-card" style="background:var(--bg-card); border:1px solid var(--border-primary); border-radius:var(--radius-md); padding:var(--spacing-3); text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:1.125rem; font-weight:700; color:var(--accent-color);" id="totalBudgetRemaining">-</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:var(--spacing-1);">คงเหลือ</div>
+        </div>
+        <div class="summary-card" style="background:var(--bg-card); border:1px solid var(--border-primary); border-radius:var(--radius-md); padding:var(--spacing-3); text-align:center; box-shadow:var(--shadow-sm);">
+          <div style="font-size:1.125rem; font-weight:700; color:var(--status-warning);" id="overBudgetCount">-</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:var(--spacing-1);">ภารกิจเกินงบ</div>
+        </div>
+      </div>
+      
+      <!-- Budget Grid -->
+      <div id="budgetDashboard" class="budget-dashboard" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:12px;">
+        <!-- Budget cards will be populated here -->
+      </div>
+      
+      <div id="budgetLoadingStatus" style="text-align:center; padding:20px; color:#6c757d; display:none;">
+        กำลังโหลดข้อมูลงบประมาณ...
+      </div>
+    </section>
+
+    <!-- Aircraft quick select -->
+    <section class="card" style="margin-top:14px;">
+      <h3 style="margin:0 0 8px;">
+        <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">flight_takeoff</span>
+        เลือกเครื่องบินอย่างรวดเร็ว
+      </h3>
+      <div id="aircraftGallery" class="gallery"></div>
+    </section>
+
+    <!-- Data table -->
+    <section style="margin-top:14px;">
+      <div class="toolbar" style="margin-bottom:8px;">
+        <h3 style="margin:0;">
+          <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">table_view</span>
+          ข้อมูลรายละเอียดทั้งหมด
+        </h3>
+      </div>
+      <div class="table-wrap">
+        <table id="dataTable" class="data-table">
+          <thead>
+            <tr>
+              <th>ลำดับ</th>
+              <th>วันที่</th>
+              <th>ภารกิจ</th>
+              <th>ประเภทเอกสาร</th>
+              <th>เล่มที่</th>
+              <th>เลขที่</th>
+              <th>ใบสั่งจ่าย เล่มที่</th>
+              <th>ใบสั่งจ่าย เลขที่</th>
+              <th>เครื่องบิน</th>
+              <th>สถานี</th>
+              <th>ผู้จัดซื้อ</th>
+              <th>ประเภทน้ำมัน</th>
+              <th>แหล่งที่มา</th>
+              <th>ปริมาณ</th>
+              <th>ราคา</th>
+              <th>มูลค่าไม่รวม VAT</th>
+              <th>VAT</th>
+              <th>รวม VAT</th>
+              <th>ผู้บันทึก</th>
+              <th>หมายเหตุ</th>
+              <th>การจัดการ</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination Controls -->
+      <div id="paginationContainer" class="pagination-container" style="display: none;">
+        <!-- Pagination content will be populated by JavaScript -->
+      </div>
+    </section>
+  </div>
+
+  <!-- Edit Modal (kept minimal but with same IDs for JS) -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>แก้ไขข้อมูล</h2>
+        <button class="modal-close" onclick="closeEditModal()" style="background:transparent;border:none;color:#fff;font-size:22px;cursor:pointer">&times;</button>
+      </div>
+      <form id="editForm" class="modal-body">
+        <fieldset class="document-section">
+          <legend>ข้อมูลเอกสาร</legend>
+          <div class="grid">
+            <label>
+              <span>วัน/เดือน/ปี</span>
+              <input type="date" id="editDate" name="date" required />
+            </label>
+            <label>
+              <span>ประเภทเอกสาร</span>
+              <input type="text" id="editDocType" name="docType" placeholder="ใบสั่งซื้อ/ใบเสร็จรับเงิน/ใบกำกับภาษี" required />
+            </label>
+            <label>
+              <span>เล่มที่</span>
+              <input type="text" id="editDocBookVolume" name="docBookVolume" placeholder="เล่มที่" />
+            </label>
+            <label>
+              <span>เลขที่</span>
+              <input type="text" id="editDocBookNo" name="docBookNo" placeholder="เลขที่" />
+            </label>
+            <label>
+              <span>ใบสั่งจ่าย เล่มที่</span>
+              <input type="text" id="editPayBookVolume" name="payBookVolume" placeholder="เล่มที่" />
+            </label>
+            <label>
+              <span>ใบสั่งจ่าย เลขที่</span>
+              <input type="text" id="editPayBookNo" name="payBookNo" placeholder="เลขที่" />
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="mission-section">
+          <legend>ภารกิจ</legend>
+          <div class="grid">
+            <label>
+              <span>ภารกิจ</span>
+              <select id="editMission" name="mission" required>
+                <option value="">เลือกภารกิจ</option>
+                <option value="บินสำรวจ">บินสำรวจ</option>
+                <option value="บินสนับสนุน">บินสนับสนุน</option>
+                <option value="ปฏิบัติการฝนหลวง">ปฏิบัติการฝนหลวง</option>
+                <option value="บินบริการ">บินบริการ</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>ข้อมูลอากาศยาน</legend>
+          <div class="grid">
+            <label>
+              <span>เครื่องบิน</span>
+              <select id="editAircraft" name="aircraft" required>
+                <option value="">เลือกเครื่องบิน</option>
+                <optgroup label="CARAVAN C208">
+                  <option value="CARAVAN C208 : 1912">1912</option>
+                  <option value="CARAVAN C208 : 1913">1913</option>
+                  <option value="CARAVAN C208 : 1914">1914</option>
+                  <option value="CARAVAN C208 : 1915">1915</option>
+                  <option value="CARAVAN C208 : 1916">1916</option>
+                  <option value="CARAVAN C208 : 1918">1918</option>
+                </optgroup>
+                <optgroup label="BEECHCRAFT 1900D">
+                  <option value="BEECHCRAFT 1900D : 1901">1901</option>
+                  <option value="BEECHCRAFT 1900D : 1902">1902</option>
+                  <option value="BEECHCRAFT 1900D : 1903">1903</option>
+                  <option value="BEECHCRAFT 1900D : 1904">1904</option>
+                  <option value="BEECHCRAFT 1900D : 1905">1905</option>
+                  <option value="BEECHCRAFT 1900D : 1906">1906</option>
+                  <option value="BEECHCRAFT 1900D : 1907">1907</option>
+                  <option value="BEECHCRAFT 1900D : 1908">1908</option>
+                  <option value="BEECHCRAFT 1900D : 1909">1909</option>
+                  <option value="BEECHCRAFT 1900D : 1910">1910</option>
+                  <option value="BEECHCRAFT 1900D : 1911">1911</option>
+                </optgroup>
+              </select>
+            </label>
+            <label>
+              <span>สถานี</span>
+              <select id="editStation" name="station" required>
+                <option value="">เลือกสถานี</option>
+                <option value="สนามบินดอนเมือง">สนามบินดอนเมือง</option>
+                <option value="สนามบินเชียงใหม่">สนามบินเชียงใหม่</option>
+                <option value="สนามบินอุดรธานี">สนามบินอุดรธานี</option>
+                <option value="สนามบินขอนแก่น">สนามบินขอนแก่น</option>
+                <option value="สนามบินอุบลราชธานี">สนามบินอุบลราชธานี</option>
+                <option value="สนามบินสุราษฎร์ธานี">สนามบินสุราษฎร์ธานี</option>
+                <option value="สนามบินหาดใหญ่">สนามบินหาดใหญ่</option>
+                <option value="สนามบินลำปาง">สนามบินลำปาง</option>
+                <option value="สนามบินพิษณุโลก">สนามบินพิษณุโลก</option>
+                <option value="สนามบินบุรีรัมย์">สนามบินบุรีรัมย์</option>
+                <option value="สนามบินสกลนคร">สนามบินสกลนคร</option>
+                <option value="สนามบินเลย">สนามบินเลย</option>
+                <option value="สนามบินนาน">สนามบินนาน</option>
+                <option value="สนามบินแพร่">สนามบินแพร่</option>
+                <option value="สนามบินแม่ฮ่องสอน">สนามบินแม่ฮ่องสอน</option>
+                <option value="สนามบินตาก">สนามบินตาก</option>
+                <option value="สนามบินสุโขทัย">สนามบินสุโขทัย</option>
+                <option value="สนามบินกำแพงเพชร">สนามบินกำแพงเพชร</option>
+                <option value="สนามบินพิจิตร">สนามบินพิจิตร</option>
+                <option value="สนามบินเพชรบูรณ์">สนามบินเพชรบูรณ์</option>
+                <option value="สนามบินชัยภูมิ">สนามบินชัยภูมิ</option>
+                <option value="สนามบินมหาสารคาม">สนามบินมหาสารคาม</option>
+                <option value="สนามบินร้อยเอ็ด">สนามบินร้อยเอ็ด</option>
+                <option value="สนามบินยโสธร">สนามบินยโสธร</option>
+                <option value="สนามบินศรีสะเกษ">สนามบินศรีสะเกษ</option>
+                <option value="สนามบินสุรินทร์">สนามบินสุรินทร์</option>
+                <option value="สนามบินนครราชสีมา">สนามบินนครราชสีมา</option>
+                <option value="สนามบินลพบุรี">สนามบินลพบุรี</option>
+                <option value="สนามบินสระบุรี">สนามบินสระบุรี</option>
+                <option value="สนามบินนครนายก">สนามบินนครนายก</option>
+                <option value="สนามบินปราจีนบุรี">สนามบินปราจีนบุรี</option>
+                <option value="สนามบินสระแก้ว">สนามบินสระแก้ว</option>
+                <option value="สนามบินจันทบุรี">สนามบินจันทบุรี</option>
+                <option value="สนามบินตราด">สนามบินตราด</option>
+                <option value="สนามบินระยอง">สนามบินระยอง</option>
+                <option value="สนามบินชลบุรี">สนามบินชลบุรี</option>
+                <option value="สนามบินนครปฐม">สนามบินนครปฐม</option>
+                <option value="สนามบินกาญจนบุรี">สนามบินกาญจนบุรี</option>
+                <option value="สนามบินราชบุรี">สนามบินราชบุรี</option>
+                <option value="สนามบินเพชรบุรี">สนามบินเพชรบุรี</option>
+                <option value="สนามบินประจวบคีรีขันธ์">สนามบินประจวบคีรีขันธ์</option>
+                <option value="สนามบินชุมพร">สนามบินชุมพร</option>
+                <option value="สนามบินระนอง">สนามบินระนอง</option>
+                <option value="สนามบินภูเก็ต">สนามบินภูเก็ต</option>
+                <option value="สนามบินกระบี่">สนามบินกระบี่</option>
+                <option value="สนามบินตรัง">สนามบินตรัง</option>
+                <option value="สนามบินพัทลุง">สนามบินพัทลุง</option>
+                <option value="สนามบินสตูล">สนามบินสตูล</option>
+                <option value="สนามบินสงขลา">สนามบินสงขลา</option>
+                <option value="สนามบินปัตตานี">สนามบินปัตตานี</option>
+                <option value="สนามบินยะลา">สนามบินยะลา</option>
+                <option value="สนามบินนราธิวาส">สนามบินนราธิวาส</option>
+              </select>
+            </label>
+            <label>
+              <span>ผู้จัดซื้อ</span>
+              <input type="text" id="editBuyer" name="buyer" placeholder="ชื่อผู้จัดซื้อ" required />
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="calculation-section">
+          <legend>การคำนวณ</legend>
+          <div class="grid">
+            <label>
+              <span>ประเภทน้ำมัน</span>
+              <select id="editFuelType" name="fuelType" required>
+                <option value="">เลือกประเภทน้ำมัน</option>
+                <option value="JET A-1">JET A-1</option>
+                <option value="AVGAS 100LL">AVGAS 100LL</option>
+                <option value="DIESEL">DIESEL</option>
+                <option value="GASOLINE">GASOLINE</option>
+              </select>
+            </label>
+            <label>
+              <span>ลิตร</span>
+              <input type="number" id="editLiters" name="liters" placeholder="จำนวนลิตร" step="0.01" required />
+            </label>
+            <label>
+              <span>ราคา/ลิตร (ฐาน)</span>
+              <input type="number" id="editPricePerLiter" name="pricePerLiter" placeholder="ราคาต่อลิตร" step="0.01" required />
+            </label>
+            <label>
+              <span>มูลค่าไม่รวม VAT</span>
+              <input type="number" id="editValueExVat" name="valueExVat" placeholder="มูลค่าไม่รวม VAT" step="0.01" readonly />
+            </label>
+            <label>
+              <span>VAT (7%)</span>
+              <input type="number" id="editVat" name="vat" placeholder="VAT" step="0.01" readonly />
+            </label>
+            <label>
+              <span>รวม VAT</span>
+              <input type="number" id="editTotalWithVat" name="totalWithVat" placeholder="รวม VAT" step="0.01" readonly />
+            </label>
+            <label>
+              <span>ผู้บันทึก</span>
+              <input type="text" id="editRecorder" name="recorder" placeholder="ชื่อผู้บันทึก" required />
+            </label>
+            <label>
+              <span>หมายเหตุ</span>
+              <input type="text" id="editNotes" name="notes" placeholder="หมายเหตุ (ถ้ามี)" />
+            </label>
+          </div>
+        </fieldset>
+      </form>
+      <div class="modal-footer">
+        <button type="button" class="cancel-btn" onclick="closeEditModal()">ยกเลิก</button>
+        <button type="button" class="save-btn" onclick="saveEditedData()">บันทึกการแก้ไข</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>
+          <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">file_download</span>
+          ส่งออกข้อมูลการใช้น้ำมัน
+        </h3>
+        <button class="close-btn" onclick="closeExportModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="modal-row">
+          <div class="form-group">
+            <label>
+              <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">date_range</span>
+              ตั้งแต่วันที่
+            </label>
+            <input type="date" id="exportFromDate" name="fromDate" />
+          </div>
+          <div class="form-group">
+            <label>
+              <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">date_range</span>
+              ถึงวันที่
+            </label>
+            <input type="date" id="exportToDate" name="toDate" />
+          </div>
+        </div>
+        
+        <div class="modal-row">
+          <div class="form-group">
+            <label>
+              <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">flight</span>
+              เครื่องบิน
+            </label>
+            <select id="exportAircraft" name="aircraft">
+              <option value="">ทั้งหมด</option>
+              <option value="ไม่ระบุ">ไม่ระบุ</option>
+              <option value="CARAVAN C208 : 1915">CARAVAN C208 : 1915</option>
+              <option value="NC212i : 1544">NC212i : 1544</option>
+              <option value="NC212i : 1547">NC212i : 1547</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>
+              <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">local_gas_station</span>
+              สถานีบริการน้ำมัน
+            </label>
+            <select id="exportStation" name="station">
+              <option value="">ทั้งหมด</option>
+              <option value="หน่วยจัดซื้อ">หน่วยจัดซื้อ</option>
+              <option value="จ.พิษณุโลก">จ.พิษณุโลก</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="modal-row">
+          <div class="form-group">
+            <label>
+              <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">work</span>
+              ภารกิจ
+            </label>
+            <select id="exportMission" name="mission">
+              <option value="">ทั้งหมด</option>
+              <option value="บินบริการ">บินบริการ</option>
+              <option value="บินสนับสนุน">บินสนับสนุน</option>
+              <option value="บินสำรวจ">บินสำรวจ</option>
+              <option value="ปฏิบัติการฝนหลวง">ปฏิบัติการฝนหลวง</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>
+              <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">description</span>
+              รูปแบบไฟล์
+            </label>
+            <select id="exportFormat" name="format" required>
+              <option value="excel">Excel (.xlsx)</option>
+              <option value="csv">CSV (.csv)</option>
+              <option value="pdf">PDF (.pdf)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeExportModal()">
+          <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+          ยกเลิก
+        </button>
+        <button type="button" class="btn btn-primary" onclick="downloadExport()">
+          <span class="material-symbols-outlined" style="font-size: 16px;">download</span>
+          ดาวน์โหลด
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <nav style="margin-top: var(--spacing-8);">
+    <div class="nav-container">
+      <div class="nav-links">
+        <a href="index.html">บันทึกข้อมูล</a>
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="inventory.html">จัดการยอดคงเหลือ</a>
+        <a href="budget.html">งบประมาณ</a>
+        <button id="reloadBtn" class="nav-action-btn">
+          <span class="material-symbols-outlined">refresh</span>
+          รีโหลดข้อมูล
+        </button>
+        <button id="exportBtn" class="nav-action-btn">
+          <span class="material-symbols-outlined">file_download</span>
+          ส่งออกข้อมูล
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <footer style="text-align: center; padding: var(--spacing-8); color: var(--text-tertiary); font-size: 0.875rem; border-top: 0.5px solid var(--border-primary); margin-top: var(--spacing-8);">
+    พัฒนาโดย: <strong>กฤษฎา ลุนาบุตร</strong> วิศวกรไฟฟ้าปฏิบัติการ
+  </footer>
+
+  <script src="config.js?v=2024011804"></script>
+  <script src="common.js?v=2024011804"></script>
+  <script src="dashboard.js?v=2024011804"></script>
+</body>
+</html>

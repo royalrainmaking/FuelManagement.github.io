@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบบริหารจัดการน้ำมัน</title>
+  <link rel="stylesheet" href="style-minimal.css" />
+</head>
+<body>
+  <header>
+    <h1>ระบบบันทึกข้อมูลการใช้น้ำมันเชื้อเพลิงอากาศยาน</h1>
+    <div class="header-subtitle">กรมฝนหลวงและการบินเกษตร กระทรวงเกษตรและสหกรณ์</div>
+  </header>
+
+  <!-- API URL is now hidden and configured automatically -->
+
+  <main>
+    <form id="fuelForm">
+      <fieldset class="compact-section">
+        <legend>ข้อมูลทั่วไป</legend>
+        <div class="ultra-compact-grid">
+          <label style="display: none;">
+            <span class="label-with-icon">ลำดับ (Auto)</span>
+            <input type="text" id="sequenceNumber" name="sequenceNumber" readonly placeholder="กำลังสร้างลำดับ..." />
+          </label>
+          <label>
+            <span class="label-with-icon">วันที่</span>
+            <input type="date" id="date" name="date" required />
+          </label>
+          <label>
+            <span class="label-with-icon">ภารกิจ</span>
+            <select id="mission" name="mission" required>
+              <option value="">เลือกภารกิจ</option>
+              <option value="บินสำรวจ">บินสำรวจ</option>
+              <option value="บินสนับสนุน">บินสนับสนุน</option>
+              <option value="ปฏิบัติการฝนหลวง">ปฏิบัติการฝนหลวง</option>
+              <option value="บินบริการ">บินบริการ</option>
+            </select>
+          </label>
+          <label>
+            <span class="label-with-icon">แหล่งที่มาน้ำมัน</span>
+            <select id="fuelSource" name="fuelSource" required onchange="handleFuelSourceChange()">
+              <option value="">เลือกแหล่งที่มา</option>
+              <option value="จัดซื้อ">จัดซื้อ</option>
+              <optgroup label="Tankfarm">
+                <option value="สนามบินนครสวรรค์ แท๊ง 1">สนามบินนครสวรรค์ แท๊ง 1 (20,000 ลิตร)</option>
+                <option value="สนามบินนครสวรรค์ แท๊ง 2">สนามบินนครสวรรค์ แท๊ง 2 (20,000 ลิตร)</option>
+                <option value="สนามบินคลองหลวง แท๊ง 1">สนามบินคลองหลวง แท๊ง 1 (15,000 ลิตร)</option>
+              </optgroup>
+              <optgroup label="รถน้ำมัน">
+                <option value="96-0677 กทม.">96-0677 กทม. (7,000 ลิตร)</option>
+                <option value="97-9769 กทม.">97-9769 กทม. (12,000 ลิตร)</option>
+                <option value="50-9109 กทม.">50-9109 กทม. (16,000 ลิตร)</option>
+                <option value="52-4018 กทม.">52-4018 กทม. (16,000 ลิตร)</option>
+                <option value="53-1224 กทม.">53-1224 กทม. (16,000 ลิตร)</option>
+                <option value="53-1225 กทม.">53-1225 กทม. (16,000 ลิตร)</option>
+                <option value="54-3780 กทม.">54-3780 กทม. (16,000 ลิตร)</option>
+                <option value="54-3781 กทม.">54-3781 กทม. (16,000 ลิตร)</option>
+                <option value="สฝษ/บ. 2320-036-0001/001">สฝษ/บ. 2320-036-0001/001 (8,000 ลิตร)</option>
+              </optgroup>
+              <option value="ถังน้ำมัน 200 ลิตร">ถังน้ำมัน 200 ลิตร</option>
+            </select>
+          </label>
+          <label>
+            <span class="label-with-icon">เครื่องบิน</span>
+            <select id="aircraftSelectForm">
+              <option value="">เลือกเครื่องบิน</option>
+              <optgroup label="CARAVAN C208">
+                <option value="CARAVAN C208 : 1912">1912</option>
+                <option value="CARAVAN C208 : 1913">1913</option>
+                <option value="CARAVAN C208 : 1914">1914</option>
+                <option value="CARAVAN C208 : 1915">1915</option>
+                <option value="CARAVAN C208 : 1916">1916</option>
+                <option value="CARAVAN C208 : 1918">1918</option>
+              </optgroup>
+              <optgroup label="CARAVAN GRAND C208B">
+                <option value="CARAVAN GRAND C208B : 1921">1921</option>
+                <option value="CARAVAN GRAND C208B : 1922">1922</option>
+              </optgroup>
+              <optgroup label="CARAVAN GRAND EX">
+                <option value="CARAVAN GRAND EX : 1931">1931</option>
+                <option value="CARAVAN GRAND EX : 1932">1932</option>
+                <option value="CARAVAN GRAND EX : 1933">1933</option>
+                <option value="CARAVAN GRAND EX : 1934">1934</option>
+                <option value="CARAVAN GRAND EX : 1935">1935</option>
+              </optgroup>
+              <optgroup label="CASA - 300">
+                <option value="CASA - 300 : 1531">1531</option>
+                <option value="CASA - 300 : 1532">1532</option>
+                <option value="CASA - 300 : 1533">1533</option>
+                <option value="CASA - 300 : 1534">1534</option>
+                <option value="CASA - 300 : 1535">1535</option>
+              </optgroup>
+              <optgroup label="CASA - 400">
+                <option value="CASA - 400 : 1541">1541</option>
+                <option value="CASA - 400 : 1542">1542</option>
+                <option value="CASA - 400 : 1543">1543</option>
+              </optgroup>
+              <optgroup label="NC212i">
+                <option value="NC212i : 1544">1544</option>
+                <option value="NC212i : 1545">1545</option>
+                <option value="NC212i : 1546">1546</option>
+                <option value="NC212i : 1547">1547</option>
+              </optgroup>
+              <optgroup label="skycourier">
+                <option value="skycourier : 2511">2511</option>
+                <option value="skycourier : 2512">2512</option>
+              </optgroup>
+              <optgroup label="L410">
+                <option value="L410 : 2611">2611</option>
+                <option value="L410 : 2612">2612</option>
+              </optgroup>
+              <optgroup label="SKA - 350">
+                <option value="SKA - 350 : 2011">2011</option>
+                <option value="SKA - 350 : 2012">2012</option>
+                <option value="SKA - 350 : 2013">2013</option>
+                <option value="SKA - 350 : 2014">2014</option>
+              </optgroup>
+              <optgroup label="CN - 235">
+                <option value="CN - 235 : 2221">2221</option>
+                <option value="CN - 235 : 2222">2222</option>
+              </optgroup>
+              <optgroup label="BELL 206B3">
+                <option value="BELL 206B3 : 1615">1615</option>
+              </optgroup>
+              <optgroup label="BELL 407">
+                <option value="BELL 407 : 2311">2311</option>
+              </optgroup>
+              <optgroup label="BELL 407GXP">
+                <option value="BELL 407GXP : 2321">2321</option>
+                <option value="BELL 407GXP : 2322">2322</option>
+              </optgroup>
+              <optgroup label="BELL 412 EP">
+                <option value="BELL 412 EP : 21111">21111</option>
+              </optgroup>
+              <optgroup label="AS350 B2">
+                <option value="AS350 B2 : 18301">18301</option>
+              </optgroup>
+              <optgroup label="H130 T2">
+                <option value="H130 T2 : 2411">2411</option>
+              </optgroup>
+              <optgroup label="AW139">
+                <option value="AW139 : 2711">2711</option>
+              </optgroup>
+            </select>
+          </label>
+          <!-- ฟิลด์สำหรับการเติมลงใน Tankfarm/รถน้ำมัน (ย้ายมาจากหมวดข้อมูลน้ำมัน) -->
+          <label id="refillTargetLabel" style="display: none;">
+            <span class="label-with-icon">เติมลงใน</span>
+            <select id="refillTarget" name="refillTarget" onchange="handleRefillTargetChange()">
+              <option value="">ไม่เติม</option>
+              <optgroup label="Drum Storage (ถังน้ำมัน 200L)">
+                <option value="สนามบินนครสวรรค์ - ถัง 200L">สนามบินนครสวรรค์ - ถัง 200L</option>
+                <option value="สนามบินคลองหลวง - ถัง 200L">สนามบินคลองหลวง - ถัง 200L</option>
+              </optgroup>
+              <optgroup label="Tankfarm">
+                <option value="สนามบินนครสวรรค์ แท๊ง 1">สนามบินนครสวรรค์ แท๊ง 1</option>
+                <option value="สนามบินนครสวรรค์ แท๊ง 2">สนามบินนครสวรรค์ แท๊ง 2</option>
+                <option value="สนามบินคลองหลวง แท๊ง 1">สนามบินคลองหลวง แท๊ง 1</option>
+              </optgroup>
+              <optgroup label="รถน้ำมัน">
+                <option value="96-0677 กทม.">96-0677 กทม.</option>
+                <option value="97-9769 กทม.">97-9769 กทม.</option>
+                <option value="50-9109 กทม.">50-9109 กทม.</option>
+                <option value="52-4018 กทม.">52-4018 กทม.</option>
+                <option value="53-1224 กทม.">53-1224 กทม.</option>
+                <option value="53-1225 กทม.">53-1225 กทม.</option>
+                <option value="54-3780 กทม.">54-3780 กทม.</option>
+                <option value="54-3781 กทม.">54-3781 กทม.</option>
+                <option value="สฝษ/บ. 2320-036-0001/001">สฝษ/บ. 2320-036-0001/001</option>
+              </optgroup>
+            </select>
+          </label>
+          <!-- ฟิลด์สำหรับถังน้ำมัน 200 ลิตร (แสดงเมื่อเลือกจัดซื้อน้ำมัน 200L) -->
+          <label id="tankCountLabel" style="display: none;">
+            <span class="label-with-icon">จำนวนถัง (200L)</span>
+            <input type="number" id="tankCount" name="tankCount" step="1" min="0" />
+          </label>
+          <label id="pricePerTankLabel" style="display: none;">
+            <span class="label-with-icon">ราคา/ถัง (200L)</span>
+            <input type="number" id="pricePerTank" name="pricePerTank" step="0.01" min="0" />
+          </label>
+          <label>
+            <span class="label-with-icon">สถานีบริการ</span>
+            <input type="text" id="station" name="station" />
+          </label>
+          <label>
+            <span class="label-with-icon">ผู้จัดซื้อ</span>
+            <input type="text" id="buyer" name="buyer" />
+          </label>
+
+          <input type="hidden" id="aircraftType" name="aircraftType" />
+          <input type="hidden" id="aircraftModel" name="aircraftModel" />
+          <input type="hidden" id="agriNo" name="agriNo" />
+        </div>
+      </fieldset>
+
+      <fieldset class="compact-section">
+        <legend>ข้อมูลเอกสาร</legend>
+        <div class="document-cards">
+          <div class="document-card">
+            <h4>เอกสารสั่งซื้อ</h4>
+            <div class="document-grid">
+              <label>
+                <span class="label-with-icon">ประเภทเอกสาร</span>
+                <input type="text" id="docType" name="docType" placeholder="ใบสั่งซื้อ/ใบเสร็จรับเงิน/ใบกำกับภาษี" required />
+              </label>
+              <label>
+                <span class="label-with-icon">เล่มที่</span>
+                <input type="text" id="docBookVolume" name="docBookVolume" placeholder="เล่มที่" />
+              </label>
+              <label>
+                <span class="label-with-icon">เลขที่</span>
+                <input type="text" id="docBookNo" name="docBookNo" placeholder="เลขที่" />
+              </label>
+            </div>
+          </div>
+          <div class="document-card">
+            <h4>ใบสั่งจ่าย</h4>
+            <div class="document-grid">
+              <label>
+                <span class="label-with-icon">เล่มที่</span>
+                <input type="text" id="payBookVolume" name="payBookVolume" placeholder="เล่มที่" />
+              </label>
+              <label>
+                <span class="label-with-icon">เลขที่</span>
+                <input type="text" id="payBookNo" name="payBookNo" placeholder="เลขที่" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="compact-section">
+        <legend>ข้อมูลน้ำมัน</legend>
+        <div class="ultra-compact-grid">
+          <label>
+            <span class="label-with-icon">ประเภทน้ำมัน</span>
+            <select id="fuelType" name="fuelType" required>
+              <option value="Jet A-1">Jet A-1</option>
+              <option value="AVGAS">AVGAS</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Gasoline 95">Gasoline 95</option>
+              <option value="อื่นๆ">อื่นๆ</option>
+            </select>
+          </label>
+          <label>
+            <span class="label-with-icon">ลิตร</span>
+            <input type="number" id="liters" name="liters" step="0.01" min="0" required />
+          </label>
+          <label>
+            <span class="label-with-icon">ราคา/ลิตร</span>
+            <input type="number" id="pricePerLiter" name="pricePerLiter" step="0.0001" min="0" required />
+          </label>
+          <label>
+            <span class="label-with-icon">VAT (%)</span>
+            <input type="number" id="vatRate" name="vatRate" step="0.01" min="0" max="100" value="7" />
+          </label>
+          <label>
+            <span class="label-with-icon">ผู้บันทึก</span>
+            <input type="text" id="recorder" name="recorder" />
+          </label>
+          <label>
+            <span class="label-with-icon">หมายเหตุ</span>
+            <input type="text" id="note" name="note" />
+          </label>
+        </div>
+        <!-- <div class="checkbox-row">
+          <label class="checkbox">
+            <input type="checkbox" id="priceIncludesVat" /> 
+            <span class="label-with-icon">ราคาต่อลิตรรวม VAT แล้ว</span>
+          </label>
+        </div> -->
+      </fieldset>
+
+      <fieldset class="compact-section calculation-section">
+        <legend>ผลการคำนวณ</legend>
+        <div class="compact-grid">
+          <label>
+            <span class="label-with-icon">ราคาไม่รวม VAT</span>
+            <input type="text" id="amountExVat" readonly />
+          </label>
+          <label>
+            <span class="label-with-icon">VAT</span>
+            <input type="text" id="vatAmount" readonly />
+          </label>
+          <label>
+            <span class="label-with-icon">ราคา + VAT</span>
+            <input type="text" id="amountIncVat" readonly />
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="submit" id="submitBtn" class="submit-btn">
+          บันทึกข้อมูล
+        </button>
+        <span id="saveStatus" class="muted"></span>
+      </div>
+    </form>
+  </main>
+
+  <nav>
+    <div class="nav-container">
+      <div class="nav-links">
+        <a href="index.html" class="active">บันทึกข้อมูล</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="inventory.html">จัดการยอดคงเหลือ</a>
+        <a href="budget.html">งบประมาณ</a>
+      </div>
+    </div>
+  </nav>
+
+  <footer style="text-align: center; padding: var(--spacing-8); color: var(--text-tertiary); font-size: 0.875rem; border-top: 0.5px solid var(--border-primary); margin-top: var(--spacing-8);">
+    พัฒนาโดย: <strong>กฤษฎา ลุนาบุตร</strong> วิศวกรไฟฟ้าปฏิบัติการ
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

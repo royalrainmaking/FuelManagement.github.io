@@ -1,0 +1,19 @@
+{
+  "name": "fuel-management-system",
+  "version": "1.0.0",
+  "description": "Thai Fuel Management System - ระบบจัดการน้ำมัน",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:verbose": "jest --verbose"
+  },
+  "keywords": ["fuel", "management", "inventory", "thai"],
+  "author": "Fuel Management Team",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
+}
