@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สรุปรายการเดินบัญชี - ระบบจัดการน้ำมัน</title>
+    <link rel="icon" href="img/ptt.png" type="image/png">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@100;200;300;400;500;600;700;800;900&family=Noto+Sans+Thai:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="inventory-style.css">
+    <style>
+        .summary-card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .summary-stat {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 16px;
+            background: white;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-stat:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-stat::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: currentColor;
+            opacity: 0.5;
+        }
+
+        .summary-stat-budget {
+            text-align: left;
+            padding: 1.5rem;
+            border-radius: 16px;
+            background: white;
+            min-height: 100%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .budget-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .budget-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .budget-item:hover {
+            transform: scale(1.02);
+        }
+
+        .budget-label {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #2c3e50;
+        }
+
+        .budget-value {
+            font-weight: 800;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        .summary-stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #2c3e50;
+            margin: 0.5rem 0;
+            line-height: 1;
+        }
+
+        .summary-stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .payment-card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            flex-grow: 1;
+        }
+
+        .payment-sub-card {
+            padding: 1.25rem 0.5rem;
+            border-radius: 12px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        @media (max-width: 1200px) {
+            .payment-card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .transaction-filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .transaction-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .transaction-table table {
+            margin-bottom: 0;
+        }
+
+        .transaction-table thead {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+        }
+
+        .transaction-table tbody tr {
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.2s ease;
+        }
+
+        .transaction-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .row-paid td {
+            background-color: #e8f5e9 !important;
+        }
+
+        .transaction-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .table-cell-action {
+            text-align: center;
+        }
+
+        .btn-detail {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            border-radius: 6px;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            border: none;
+            padding: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
+            background: #fafbfc;
+        }
+
+        .detail-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+
+        .detail-section-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #0d6efd;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .detail-item {
+            background: #ffffff;
+            padding: 1.25rem;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            transition: all 0.25s ease;
+        }
+
+        .detail-item:hover {
+            border-color: #dee2e6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .detail-item.highlight {
+            background: #fffaeb;
+            border-color: #ffd966;
+        }
+
+        .detail-item.highlight:hover {
+            border-color: #ffc107;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.12);
+        }
+
+        .detail-item.success {
+            background: #ffffff;
+            border-color: #e9ecef;
+        }
+
+        .detail-item.primary {
+            background: #ffffff;
+            border-color: #e9ecef;
+        }
+
+        .detail-item.info {
+            background: #ffffff;
+            border-color: #e9ecef;
+        }
+
+        .detail-label {
+            font-size: 0.7rem;
+            color: #6c757d;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .detail-label i {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        .detail-item.highlight .detail-label {
+            color: #b8860b;
+        }
+
+        .detail-item.highlight .detail-label i {
+            opacity: 1;
+            color: #b8860b;
+        }
+
+        .detail-item.success .detail-label {
+            color: #6c757d;
+        }
+
+        .detail-item.primary .detail-label {
+            color: #6c757d;
+        }
+
+        .detail-item.info .detail-label {
+            color: #6c757d;
+        }
+
+        .detail-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #2c3e50;
+            word-break: break-word;
+        }
+
+        .detail-item.highlight .detail-value {
+            color: #b8860b;
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+
+        .detail-item.success .detail-value {
+            color: #2c3e50;
+        }
+
+        .detail-item.primary .detail-value {
+            color: #2c3e50;
+        }
+
+        .detail-item.info .detail-value {
+            color: #2c3e50;
+        }
+
+        .detail-value-unit {
+            font-size: 0.8rem;
+            color: #6c757d;
+            font-weight: 500;
+            margin-left: 0.4rem;
+        }
+
+        .detail-item.highlight .detail-value-unit {
+            color: #b8860b;
+            font-weight: 600;
+        }
+
+        .uid-display {
+            background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+            border: 2px solid #0d6efd;
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .uid-display .detail-label {
+            margin-bottom: 1rem;
+            justify-content: center;
+            color: #0d6efd;
+            font-size: 0.75rem;
+        }
+
+        .uid-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #0d6efd;
+            letter-spacing: 2px;
+            word-break: break-all;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        /* Ensure modal appears above overlay */
+        .modal {
+            z-index: 1060 !important;
+        }
+        
+        .modal-backdrop {
+            z-index: 1050 !important;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            opacity: 0.3;
+            margin-bottom: 1rem;
+        }
+
+        .transaction-type-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-purchase {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-transfer {
+            background-color: #f3e5f5;
+            color: #7c3aed;
+        }
+
+        .badge-usage {
+            background-color: #fce4ec;
+            color: #c2185b;
+        }
+
+        .badge-other {
+            background-color: #f1f1f1;
+            color: #424242;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .pagination-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box .fa-search {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .search-box input {
+            padding-left: 2.5rem;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .search-box input:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .navbar-logo {
+            max-height: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .detail-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .detail-item {
+                padding: 1rem;
+            }
+
+            .detail-item.highlight .detail-value {
+                font-size: 1.1rem;
+            }
+
+            .transaction-table {
+                font-size: 0.9rem;
+            }
+
+            .transaction-table thead {
+                font-size: 0.85rem;
+            }
+
+            .table-cell-action {
+                padding: 0.25rem 0 !important;
+            }
+
+            .btn-detail {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <img src="img/logo.png" alt="Logo" class="navbar-logo me-2">
+                <div>
+                    <div class="fw-bold">ระบบจัดการน้ำมัน</div>
+                    <small class="opacity-75">กองบริหารการบินเกษตร กรมฝนหลวงและการบินเกษตร</small>
+                </div>
+            </a>
+            <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-2">
+                <a href="https://royalrainmaking.github.io/AircraftData/index.html" class="btn btn-light btn-sm" title="ข้อมูลอากาศยาน">
+                    <i class="fas fa-plane me-1"></i> ข้อมูลอากาศยาน
+                </a>
+                <a href="index.html" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> กลับ
+                </a>
+                <a href="price-management.html" class="btn btn-light btn-sm" target="_blank">
+                    <i class="fas fa-cog me-1"></i> จัดการราคา
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-container text-center">
+            <div class="loading-spinner"></div>
+            <div class="loading-text mt-3" id="loadingText" style="color: white; font-weight: 500;">กำลังประมวลผล...</div>
+            <div class="progress mt-3" style="width: 250px; height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; overflow: hidden; display: none;" id="progressContainer">
+                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <!-- Page Title -->
+        <div class="mb-4">
+            <h2 class="mb-2">
+                <i class="fas fa-chart-bar me-2 text-primary"></i>
+                สรุปรายการเดินบัญชี
+            </h2>
+            <p class="text-muted mb-0">ข้อมูลรายการทั้งหมดจากการจัดเก็บและจำหน่ายน้ำมัน</p>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="row g-4 mb-4">
+            <!-- Row 1: Core Stats -->
+            <div class="col-md-4">
+                <div class="summary-stat text-primary" style="color: #0d6efd;">
+                    <div class="summary-stat-icon">
+                        <i class="fas fa-list-check"></i>
+                    </div>
+                    <div class="summary-stat-label">จำนวนรายการทั้งหมด</div>
+                    <div class="summary-stat-value" id="totalTransactions">0</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-stat text-success" style="color: #198754;">
+                    <div class="summary-stat-icon">
+                        <i class="fas fa-gas-pump"></i>
+                    </div>
+                    <div class="summary-stat-label">ปริมาณรวมทั้งหมด (ลิตร)</div>
+                    <div class="summary-stat-value" id="totalVolume">0</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-stat text-warning" style="color: #f59e0b;">
+                    <div class="summary-stat-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="summary-stat-label">มูลค่ารวมทั้งหมด (บาท)</div>
+                    <div class="summary-stat-value" id="totalCost">0</div>
+                </div>
+            </div>
+
+            <!-- Row 2: Breakdowns -->
+            <div class="col-md-6">
+                <div class="summary-stat-budget">
+                    <h5 class="fw-bold mb-4 d-flex align-items-center">
+                        <i class="fas fa-check-double text-info me-2"></i>
+                        สถานะการเบิกจ่าย
+                    </h5>
+                    <div class="payment-card-grid">
+                        <div class="payment-sub-card bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                            <div class="summary-stat-label" style="color: inherit; margin-bottom: 0.5rem;">เบิกจ่ายแล้ว</div>
+                            <div id="totalPaid">
+                                <div style="font-size: 1.8rem; font-weight: 800;">0 บาท</div>
+                                <div style="font-size: 1.1rem; font-weight: 700;">0 รายการ</div>
+                            </div>
+                        </div>
+                        <div class="payment-sub-card bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">
+                            <div class="summary-stat-label" style="color: inherit; margin-bottom: 0.5rem;">ยังไม่เบิกจ่าย</div>
+                            <div id="totalUnpaid">
+                                <div style="font-size: 1.8rem; font-weight: 800;">0 บาท</div>
+                                <div style="font-size: 1.1rem; font-weight: 700;">0 รายการ</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="summary-stat-budget">
+                    <h5 class="fw-bold mb-4 d-flex align-items-center">
+                        <i class="fas fa-wallet text-warning me-2"></i>
+                        งบคงเหลือคงเหลือตามแผน
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="budget-item bg-warning bg-opacity-10 border-start border-4 border-warning">
+                                <span class="budget-label"><i class="fas fa-cloud-rain text-warning" style="width: 20px;"></i> บรู</span>
+                                <span class="budget-value text-warning" id="quickRemainingBru">0</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="budget-item bg-primary bg-opacity-10 border-start border-4 border-primary">
+                                <span class="budget-label"><i class="fas fa-shield-alt text-primary" style="width: 20px;"></i> ยุทธ</span>
+                                <span class="budget-value text-primary" id="quickRemainingYuttaya">0</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="budget-item bg-info bg-opacity-10 border-start border-4 border-info">
+                                <span class="budget-label"><i class="fas fa-smog text-info" style="width: 20px;"></i> ฝุ่น</span>
+                                <span class="budget-value text-info" id="quickRemainingDust">0</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="budget-item bg-danger bg-opacity-10 border-start border-4 border-danger">
+                                <span class="budget-label"><i class="fas fa-gem text-danger" style="width: 20px;"></i> ลูกเห็บ</span>
+                                <span class="budget-value text-danger" id="quickRemainingCentral">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="transaction-filters">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">ค้นหารายการ</label>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-control" id="searchInput" placeholder="ค้นหาจากชื่อแหล่ง ปลายทาง ผู้บันทึก UID...">
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">จำนวนรายการ</label>
+                    <select class="form-select" id="itemsPerPageFilter">
+                        <option value="10" selected>10 รายการ</option>
+                        <option value="25">25 รายการ</option>
+                        <option value="50">50 รายการ</option>
+                        <option value="100">100 รายการ</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">จัดเรียงตาม</label>
+                    <select class="form-select" id="sortByFilter">
+                        <option value="date_desc">วันที่ใหม่สุด</option>
+                        <option value="date_asc">วันที่เก่าสุด</option>
+                        <option value="volume_desc">ปริมาณมากสุด</option>
+                        <option value="volume_asc">ปริมาณน้อยสุด</option>
+                        <option value="cost_desc">มูลค่ามากสุด</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">สถานะเบิกจ่าย</label>
+                    <div id="paymentStatusCheckboxContainer" class="filter-checkbox-group d-flex align-items-center gap-3" style="height: 42px; border: 1px solid #dee2e6; border-radius: 8px; padding: 4px 15px; background: white;">
+                        <div class="form-check mb-0">
+                            <input class="form-check-input status-filter-checkbox" type="checkbox" value="paid" id="statusPaid" checked>
+                            <label class="form-check-label" for="statusPaid">เบิกจ่ายแล้ว</label>
+                        </div>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input status-filter-checkbox" type="checkbox" value="unpaid" id="statusUnpaid" checked>
+                            <label class="form-check-label" for="statusUnpaid">ยังไม่เบิกจ่าย</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">กลุ่มการเบิกเงิน (หมายเหตุ)</label>
+                    <div id="noteFilterContainer" class="filter-checkbox-group" style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; padding: 0; background: white;">
+                    </div>
+                </div>
+                <div class="col-md-12 d-flex justify-content-end gap-2 mt-2">
+                    <button class="btn btn-primary px-4" id="resetFiltersBtn">
+                        <i class="fas fa-redo me-1"></i> รีเซ็ต
+                    </button>
+                    <button type="button" class="btn btn-success px-4" id="exportFilteredBtn" title="Export ข้อมูลที่กรองแล้ว">
+                        <i class="fas fa-file-excel me-1"></i> Export ที่กรอง
+                    </button>
+                    <button type="button" class="btn btn-outline-success px-4" id="exportAllBtn" title="Export ทั้งหมด">
+                        <i class="fas fa-download me-1"></i> Export ทั้งหมด
+                    </button>
+                    <button type="button" class="btn btn-outline-info px-4" id="exportInventoryBtn" title="Export แหล่งน้ำมัน">
+                        <i class="fas fa-gas-pump me-1"></i> Export แหล่งน้ำมัน
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Advanced Filters (Toggle) -->
+            <div class="mt-3 pt-3 border-top">
+                <button class="btn btn-sm btn-outline-primary" id="toggleAdvancedFilters">
+                    <i class="fas fa-sliders-h me-1"></i>ตัวกรองขั้นสูง
+                </button>
+            </div>
+            
+            <!-- Advanced Filters Panel -->
+            <div id="advancedFiltersPanel" class="mt-3" style="display: none;">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">วันที่เริ่มต้น</label>
+                        <input type="date" class="form-control" id="startDateFilter">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">วันที่สิ้นสุด</label>
+                        <input type="date" class="form-control" id="endDateFilter">
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">แหล่งน้ำมัน</label>
+                        <div id="sourceFilterContainer" class="filter-checkbox-group" style="max-height: 250px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 0;">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">ปลายทาง</label>
+                        <div id="destinationFilterContainer" class="filter-checkbox-group" style="max-height: 250px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 0;">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">หน่วย</label>
+                        <div id="unitFilterContainer" class="filter-checkbox-group" style="max-height: 250px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 0;">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">ภารกิจ</label>
+                        <div id="missionFilterContainer" class="filter-checkbox-group" style="max-height: 250px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 0;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Action Bar -->
+        <div id="bulkActionBar" class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center justify-content-between d-none" style="border-radius: 10px; border: none; box-shadow: 0 4px 12px rgba(13, 110, 253, 0.1);">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-check-square me-3 fs-5"></i>
+                <span id="selectedCountText" class="fw-bold">เลือกแล้ว 0 รายการ</span>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-success px-3" onclick="openBulkPaymentNoteModal(true)">
+                    <i class="fas fa-money-check-alt me-1"></i> ยืนยันเบิกจ่าย (เป็นกลุ่ม)
+                </button>
+                <button class="btn btn-sm btn-outline-danger px-3" onclick="bulkUpdatePaymentStatus(false)">
+                    <i class="fas fa-times me-1"></i> ยกเลิกเบิกจ่าย
+                </button>
+                <button class="btn btn-sm btn-link text-secondary" onclick="clearSelection()">
+                    ล้างการเลือก
+                </button>
+            </div>
+        </div>
+
+        <!-- Transactions Table -->
+        <div class="transaction-table">
+            <div style="overflow-x: auto;">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;" class="text-center">
+                                <input type="checkbox" class="form-check-input" id="selectAllTransactions" title="เลือกทั้งหมดในหน้านี้" onchange="toggleSelectAll(this)">
+                                <div style="font-size: 0.7rem; margin-top: 2px;">เบิกเงิน</div>
+                            </th>
+                            <th style="width: 12%;"><i class="fas fa-hashtag"></i> UID</th>
+                            <th style="width: 10%;">วันที่</th>
+                            <th style="width: 10%;">ประเภท</th>
+                            <th style="width: 12%;">แหล่งน้ำมัน</th>
+                            <th style="width: 12%;">ปลายทาง</th>
+                            <th style="width: 14%;">ภารกิจ</th>
+                            <th style="width: 11%;">ปริมาณ (ลิตร)</th>
+                            <th style="width: 11%;">มูลค่า (บาท)</th>
+                            <th style="width: 10%;" class="table-cell-action">การจัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTableBody">
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">
+                                <i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูล...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container" id="paginationContainer">
+                <div class="pagination-info" id="paginationInfo">
+                    แสดงรายการ 0 - 0 จาก 0 รายการ
+                </div>
+                <nav>
+                    <ul class="pagination mb-0" id="paginationNav">
+                        <!-- Pagination buttons will be generated here -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Note Modal -->
+    <div class="modal fade" id="paymentNoteModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0" style="border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #198754 0%, #157347 100%); color: white; border: none;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-comment-dollar me-2"></i>
+                        ระบุหมายเหตุการเบิกเงิน
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="paymentNoteModalCloseBtn"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-4">
+                        <label for="paymentNoteInput" class="form-label fw-bold text-success">หมายเหตุ / กลุ่มการเบิกเงิน</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="fas fa-tag text-success"></i></span>
+                            <input type="text" class="form-control border-start-0 ps-0" id="paymentNoteInput" list="existingPaymentNotes" placeholder="เช่น ชุดที่ 1, รอบเดือน ม.ค. 67, บัญชี ก.">
+                            <datalist id="existingPaymentNotes">
+                                <!-- Existing notes will be populated here -->
+                            </datalist>
+                        </div>
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle me-1"></i>คุณสามารถเลือกจากรายการที่เคยใช้ หรือพิมพ์ใหม่เพื่อสร้างกลุ่มใหม่
+                        </div>
+                    </div>
+
+                    <!-- Missions Selection (For bulk confirmation) -->
+                    <div id="bulkMissionSelectionContainer">
+                        <label class="form-label fw-bold text-primary">ยืนยันภารกิจ</label>
+                        <div class="p-3 bg-white rounded border">
+                            <div id="bulkMissionsGroup" class="row g-2">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input bulk-mission-checkbox" type="checkbox" value="บินบริการ" id="bulkMission1">
+                                        <label class="form-check-label" for="bulkMission1">บินบริการ</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input bulk-mission-checkbox" type="checkbox" value="ปฏิบัติการฝนหลวง" id="bulkMission2">
+                                        <label class="form-check-label" for="bulkMission2">ปฏิบัติการฝนหลวง</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input bulk-mission-checkbox" type="checkbox" value="ดัดแปลงสภาพอากาศ (ฝุ่น)" id="bulkMission3">
+                                        <label class="form-check-label" for="bulkMission3">ดัดแปลงสภาพอากาศ (ฝุ่น)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input bulk-mission-checkbox" type="checkbox" value="ดัดแปลงสภาพอากาศ (ลูกเห็บ)" id="bulkMission4">
+                                        <label class="form-check-label" for="bulkMission4">ดัดแปลงสภาพอากาศ (ลูกเห็บ)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input bulk-mission-checkbox" type="checkbox" value="บินสำรวจ" id="bulkMission5">
+                                        <label class="form-check-label" for="bulkMission5">บินสำรวจ</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input bulk-mission-checkbox" type="checkbox" value="บินทดสอบ" id="bulkMission6">
+                                        <label class="form-check-label" for="bulkMission6">บินทดสอบ</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input bulk-mission-checkbox" type="checkbox" value="อื่นๆ" id="bulkMissionOther">
+                                        <label class="form-check-label" for="bulkMissionOther">อื่นๆ (ระบุ)</label>
+                                    </div>
+                                    <div id="bulkOtherMissionContainer" class="mt-2" style="display: none;">
+                                        <input type="text" id="bulkOtherMissionDetails" class="form-control form-control-sm" placeholder="ระบุรายละเอียดภารกิจ...">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-text mt-2 text-primary">
+                            <i class="fas fa-info-circle me-1"></i>ภารกิจที่เลือกจะถูกอัปเดตลงในทุกรายการที่เลือก
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light p-3">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-success px-4" id="confirmPaymentNoteBtn">
+                        <i class="fas fa-check me-2"></i>ยืนยัน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0" style="border-radius: 20px;">
+                <div class="modal-header bg-warning text-dark border-0 p-4">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-edit me-2"></i>แก้ไขรายการ
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <form id="editTransactionForm">
+                        <input type="hidden" id="editUid">
+                        
+                        <!-- UID Display (Read-only) -->
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold text-uppercase">UID รายการ</label>
+                            <div id="editUidDisplay" class="form-control bg-white border-0 fw-bold py-2" style="font-family: 'Courier New', monospace; letter-spacing: 1px; color: #0d6efd;"></div>
+                        </div>
+
+                        <!-- Volume Input -->
+                        <div class="mb-4">
+                            <label for="editVolume" class="form-label fw-bold">ปริมาณ (ลิตร)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-gas-pump text-primary"></i></span>
+                                <input type="number" class="form-control border-start-0 ps-0" id="editVolume" step="0.01" required placeholder="0.00">
+                                <span class="input-group-text bg-white border-start-0">ลิตร</span>
+                            </div>
+                        </div>
+
+                        <!-- Total Cost Input -->
+                        <div class="mb-4">
+                            <label for="editTotalCost" class="form-label fw-bold">มูลค่ารวม (บาท)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-money-bill-wave text-warning"></i></span>
+                                <input type="number" class="form-control border-start-0 ps-0" id="editTotalCost" step="0.01" required placeholder="0.00">
+                                <span class="input-group-text bg-white border-start-0">บาท</span>
+                            </div>
+                        </div>
+
+                        <!-- Missions Selection -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">ภารกิจ</label>
+                            <div class="p-4 bg-white rounded border">
+                                <div id="editMissionsGroup" class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input mission-checkbox" type="checkbox" value="บินบริการ" id="editMission1">
+                                            <label class="form-check-label" for="editMission1">บินบริการ</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input mission-checkbox" type="checkbox" value="ปฏิบัติการฝนหลวง" id="editMission2">
+                                            <label class="form-check-label" for="editMission2">ปฏิบัติการฝนหลวง</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input mission-checkbox" type="checkbox" value="ดัดแปลงสภาพอากาศ (ฝุ่น)" id="editMission3">
+                                            <label class="form-check-label" for="editMission3">ดัดแปลงสภาพอากาศ (ฝุ่น)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input mission-checkbox" type="checkbox" value="ดัดแปลงสภาพอากาศ (ลูกเห็บ)" id="editMission4">
+                                            <label class="form-check-label" for="editMission4">ดัดแปลงสภาพอากาศ (ลูกเห็บ)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input mission-checkbox" type="checkbox" value="บินสำรวจ" id="editMission5">
+                                            <label class="form-check-label" for="editMission5">บินสำรวจ</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input mission-checkbox" type="checkbox" value="บินทดสอบ" id="editMission6">
+                                            <label class="form-check-label" for="editMission6">บินทดสอบ</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input mission-checkbox" type="checkbox" value="อื่นๆ" id="editMissionOther">
+                                            <label class="form-check-label" for="editMissionOther">อื่นๆ (ระบุ)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="editOtherMissionContainer" class="mt-2" style="display: none;">
+                                    <input type="text" id="editOtherMissionDetails" class="form-control form-control-sm" placeholder="ระบุรายละเอียดภารกิจ...">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 p-4 bg-light">
+                    <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-3" data-bs-dismiss="modal">
+                        ยกเลิก
+                    </button>
+                    <button type="button" class="btn btn-primary px-4 py-2 rounded-3" id="saveEditBtn">
+                        <i class="fas fa-save me-2"></i>บันทึกการแก้ไข
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0" id="detailModalContent" style="border-radius: 20px; overflow: hidden; max-height: 90vh;">
+                <!-- Content will be populated here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Viewer Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-image me-2"></i>
+                        <span id="imageModalTitle">รูปภาพเอกสาร</span>
+                    </h5>
+                    <div class="ms-auto d-flex align-items-center">
+                        <button type="button" class="btn btn-link text-white me-2 p-0" id="fullscreenToggleBtn" title="ขยายเต็มจอ">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body text-center p-0" style="background: #f8f9fa; position: relative; overflow: hidden; min-height: 200px; display: flex; align-items: center; justify-content: center;">
+                    <div id="imageLoadingSpinner" class="spinner-border text-primary" role="status" style="display: none;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <img id="imageModalImage" src="" alt="รูปภาพ" style="max-width: 100%; height: auto; max-height: 70vh; object-fit: contain; transition: transform 0.3s ease;" referrerpolicy="no-referrer">
+                </div>
+                <div class="modal-footer border-top bg-white">
+                    <small class="text-muted me-auto" id="imageModalInfo"></small>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>ปิด
+                    </button>
+                    <a id="imageModalDownloadBtn" class="btn btn-primary" target="_blank">
+                        <i class="fas fa-download me-1"></i>ดาวน์โหลด
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Confirmation Modal -->
+    <div class="modal fade" id="cancelConfirmationModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content border-0">
+                <div class="modal-header" style="background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%); color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ยืนยันการยกเลิกรายการ
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <!-- Warning Section (Non-scrollable) -->
+                <div style="padding: 1.5rem;">
+                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 1.5rem; color: #856404; flex-shrink: 0;"></i>
+                        <div>
+                            <h6 style="color: #856404; margin-bottom: 0.5rem; font-weight: 600;">เตือน: การยกเลิกถาวร</h6>
+                            <p style="color: #856404; margin-bottom: 0; font-size: 0.9rem;">
+                                การยกเลิกรายการจะนำรายการออกจากระบบและคืนลิตรกลับไปยังแหล่งจ่าย 
+                                ต้องการดำเนินการต่อหรือไม่?
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- Full Transaction Details -->
+                    <div id="cancelConfirmationDetails" style="margin-bottom: 1.5rem;">
+                        <!-- Details will be populated here -->
+                    </div>
+
+                    <!-- Canceller Name Verification -->
+                    <div style="background: #e7f3ff; border: 2px solid #0d6efd; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+                        <label style="font-size: 0.8rem; font-weight: 600; color: #0c5ed6; text-transform: uppercase; display: block; margin-bottom: 0.5rem;">
+                            <i class="fas fa-user-check me-1"></i>ยืนยันตัวตนของผู้ยกเลิก
+                        </label>
+                        <p style="font-size: 0.85rem; color: #0c5ed6; margin-bottom: 1rem;">
+                            โปรดกรอกชื่อของคุณเพื่อยืนยันการยกเลิกรายการ
+                        </p>
+                        <input type="text" class="form-control" id="cancellerName" placeholder="กรอกชื่อของคุณ (เช่น สมชาย ใจดี)" style="border-radius: 6px;">
+                        <small style="color: #0c5ed6; display: block; margin-top: 0.5rem;">
+                            <i class="fas fa-info-circle me-1"></i>ข้อมูลนี้จะถูกบันทึกในระบบเพื่อการตรวจสอบ
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <div id="cancelLoadingSpinner" style="display: none; margin-right: auto;">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style="color: #dc3545;"></span>
+                        <span style="color: #dc3545; font-weight: 500;">กำลังประมวลผล...</span>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="cancelModalCloseBtn">
+                        <i class="fas fa-times me-1"></i>ยกเลิก
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelBtn">
+                        <i class="fas fa-check me-1"></i>ยืนยันการยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
+    <script src="transaction-summary.js"></script>
+</body>
+</html>
